@@ -1,0 +1,32 @@
+version: "3"
+
+services:
+
+  user-service:
+    image: services/user-service
+    build:
+      context: ${BACK_ABSOLUTE_PATH}/
+      dockerfile: ${INFRA_ABSOLUTE_PATH}/images/user-service.Dockerfile
+    networks:
+      - user-service-network
+    ports:
+      - "8080:8080"
+    restart: on-failure
+    depends_on:
+      - database
+
+  database:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: main_database
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
+    networks:
+      - user-service-network
+    volumes:
+      - ${INFRA_ABSOLUTE_PATH}/init:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+
+networks:
+  user-service-network:
