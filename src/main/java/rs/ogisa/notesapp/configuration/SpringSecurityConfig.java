@@ -21,7 +21,6 @@ import rs.ogisa.notesapp.services.UserService;
 @EnableAsync
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
-
 public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
     private final UserService userService;
     private final JwtFilter jwtFilter;
@@ -43,18 +42,14 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
                 .disable()
                 .authorizeRequests()
                 .antMatchers("/api/v1/user/auth/**").permitAll()
-                .antMatchers("/api/v1/user/setPassword/**").permitAll()
-                .antMatchers("/api/v1/**").permitAll()
                 .antMatchers("/swagger-ui/**").permitAll()
-                .antMatchers("/v3/**").permitAll()
-                .antMatchers("/actuator/**").permitAll()
                 .anyRequest().authenticated()
                 .and().sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and().headers()
                 .frameOptions().disable();
 
-//        httpSecurity.addFilterBefore(this.jwtFilter, UsernamePasswordAuthenticationFilter.class);
+        httpSecurity.addFilterBefore(this.jwtFilter, UsernamePasswordAuthenticationFilter.class);
     }
 
     @Override

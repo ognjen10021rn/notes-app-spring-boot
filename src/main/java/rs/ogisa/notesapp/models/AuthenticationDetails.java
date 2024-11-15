@@ -7,6 +7,6 @@ public interface AuthenticationDetails {
 
     String getUsername();
 
-    Long getId();
+    Long getUserId();
 
 }

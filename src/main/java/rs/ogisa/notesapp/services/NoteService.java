@@ -7,10 +7,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import rs.ogisa.notesapp.dto.CreateNoteDto;
-import rs.ogisa.notesapp.dto.CreateUserDto;
-import rs.ogisa.notesapp.dto.EditNoteDto;
-import rs.ogisa.notesapp.dto.UserDto;
+import rs.ogisa.notesapp.dto.*;
+import rs.ogisa.notesapp.exceptions.NoteNotFoundException;
 import rs.ogisa.notesapp.models.Note;
 import rs.ogisa.notesapp.models.User;
 import rs.ogisa.notesapp.models.UserNote;
@@ -50,6 +48,7 @@ public class NoteService {
         userNoteRepository.save(userNote);
 
         //TODO dodaj proveru da li je user vec dodao te korisnike u note
+        //TODO zasto?
 
         List<UserNote> userNoteList = new ArrayList<>();
         for(Long usrId : createNoteDto.getUserIds()){
@@ -60,6 +59,7 @@ public class NoteService {
             userNoteList.add(usr);
         }
         userNoteRepository.saveAll(userNoteList);
+
 
         return true;
 
@@ -72,6 +72,18 @@ public class NoteService {
         return noteRepository.findAll();
     }
 
+    public List<Note> getAllNotesByUserId(Long userId){
+        List<UserNote> userNoteList = userNoteRepository.findAllByUserId(userId);
+        List<Note> noteList = new ArrayList<>();
+        for(UserNote note : userNoteList){
+            Note nt = noteRepository.findByNoteId(note.getNoteId()).orElseThrow(()
+                    -> new NoteNotFoundException(note.getNoteId()));
+            noteList.add(nt);
+        }
+
+        return noteList;
+    }
+
     @Async
     public ResponseEntity<?> editNote(EditNoteDto editNoteDto){
 
@@ -80,8 +92,8 @@ public class NoteService {
             return ResponseEntity.status(403).build();
         }
 
-        Note note = noteRepository.findByNoteId(editNoteDto.getNoteId());
-        User user = userRepository.findByUserId(editNoteDto.getUserId());
+        Note note = noteRepository.findByNoteId(editNoteDto.getNoteId()).orElseThrow(() -> new NoteNotFoundException(editNoteDto.getNoteId()));
+        User user = userRepository.findByUserId(editNoteDto.getUserId()).orElseThrow(() -> new NoteNotFoundException(editNoteDto.getNoteId()));
         if(note == null || user == null) {
             return ResponseEntity.notFound().build();
         }

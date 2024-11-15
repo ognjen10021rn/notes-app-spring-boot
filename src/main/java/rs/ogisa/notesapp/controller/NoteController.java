@@ -2,6 +2,7 @@ package rs.ogisa.notesapp.controller;
 
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import rs.ogisa.notesapp.dto.CreateNoteDto;
 import rs.ogisa.notesapp.dto.CreateUserDto;
@@ -35,5 +36,10 @@ public class NoteController {
     @GetMapping("/getAllNote")
     public List<Note> getAllNotes() {
         return noteService.getAllNotes();
+    }
+
+    @GetMapping("/getAllNoteByUserId/{userId}")
+    public List<Note> getAllNotes(@PathVariable Long userId) {
+        return noteService.getAllNotesByUserId(userId);
     }
 }

@@ -35,7 +35,7 @@ public class JwtUtil {
         Map<String, Object> claims = new HashMap<>();
 
         if (authenticationDetails instanceof UserDto) {
-            claims.put("id", authenticationDetails.getId());
+            claims.put("id", authenticationDetails.getUserId());
             claims.put("username", authenticationDetails.getUsername());
         }
 

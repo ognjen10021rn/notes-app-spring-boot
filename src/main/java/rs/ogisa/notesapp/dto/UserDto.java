@@ -16,8 +16,4 @@ public class UserDto implements Serializable, AuthenticationDetails {
 
     private String password;
 
-    @Override
-    public Long getId() {
-        return userId;
-    }
 }

@@ -48,6 +48,7 @@ public class UserService {
             return null;
         }
         UserDto userDto = new UserDto();
+        userDto.setUserId(user.getUserId());
         userDto.setUsername(user.getUsername());
         userDto.setPassword(user.getPassword());
         return userDto;
