@@ -84,27 +84,25 @@ public class NoteService {
         return noteList;
     }
 
-    @Async
-    public ResponseEntity<?> editNote(EditNoteDto editNoteDto){
+    public Note sendContentToUserNote(EditNoteDto editNoteDto){
 
         UserNote userNote = userNoteRepository.findByUserIdAndNoteId(editNoteDto.getUserId(), editNoteDto.getNoteId());
         if(userNote == null){
-            return ResponseEntity.status(403).build();
+            throw new NoteNotFoundException(editNoteDto.getNoteId());
         }
 
         Note note = noteRepository.findByNoteId(editNoteDto.getNoteId()).orElseThrow(() -> new NoteNotFoundException(editNoteDto.getNoteId()));
-        User user = userRepository.findByUserId(editNoteDto.getUserId()).orElseThrow(() -> new NoteNotFoundException(editNoteDto.getNoteId()));
-        if(note == null || user == null) {
-            return ResponseEntity.notFound().build();
-        }
+
         note.setIsLocked(true);
 
         note.setTitle(editNoteDto.getTitle());
         note.setContent(editNoteDto.getContent());
         note.setUpdatedAt(LocalDateTime.now());
 
+        note.setIsLocked(false);
+
         noteRepository.save(note);
-        return ResponseEntity.ok().build();
+        return note;
 
     }
 

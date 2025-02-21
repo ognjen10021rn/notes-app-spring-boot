@@ -1,11 +1,16 @@
 package rs.ogisa.notesapp.controller;
 
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import rs.ogisa.notesapp.dto.CreateNoteDto;
 import rs.ogisa.notesapp.dto.CreateUserDto;
+import rs.ogisa.notesapp.dto.EditNoteDto;
 import rs.ogisa.notesapp.models.Note;
 import rs.ogisa.notesapp.models.UserNote;
 import rs.ogisa.notesapp.services.NoteService;
@@ -19,6 +24,7 @@ import java.util.List;
 public class NoteController {
 
     private NoteService noteService;
+    private SimpMessagingTemplate messagingTemplate;
 
     @PostMapping("/createNote/{userId}")
     public ResponseEntity<Void> createNote(@PathVariable Long userId, @RequestBody CreateNoteDto createNoteDto) {
@@ -41,5 +47,11 @@ public class NoteController {
     @GetMapping("/getAllNoteByUserId/{userId}")
     public List<Note> getAllNotes(@PathVariable Long userId) {
         return noteService.getAllNotesByUserId(userId);
+    }
+
+    @MessageMapping("/update-note")
+    public void changeNoteContent(EditNoteDto editNoteDto) {
+        Note changedNote = noteService.sendContentToUserNote(editNoteDto);
+        messagingTemplate.convertAndSend("/content/note/" + editNoteDto.getNoteId(), changedNote);
     }
 }
