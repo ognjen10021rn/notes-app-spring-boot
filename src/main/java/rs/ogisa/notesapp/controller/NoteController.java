@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import rs.ogisa.notesapp.dto.CreateNoteDto;
@@ -35,6 +36,13 @@ public class NoteController {
 
         return ResponseEntity.ok().build();
     }
+
+
+    @GetMapping("/getNoteById/{noteId}")
+    public Note getNoteById(@PathVariable Long noteId) {
+        return noteService.getNoteById(noteId);
+    }
+
     @GetMapping("/getAllUserNote")
     public List<UserNote> getAllUserNote() {
         return noteService.getAllUserNote();
@@ -50,8 +58,9 @@ public class NoteController {
     }
 
     @MessageMapping("/update-note")
+    @SendToUser("/queue/position-updates")
     public void changeNoteContent(EditNoteDto editNoteDto) {
         Note changedNote = noteService.sendContentToUserNote(editNoteDto);
-        messagingTemplate.convertAndSend("/content/note/" + editNoteDto.getNoteId(), changedNote);
+        messagingTemplate.convertAndSendToUser(editNoteDto.getUsername(),"/queue/position-updates/", changedNote);
     }
 }

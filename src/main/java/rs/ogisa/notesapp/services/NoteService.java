@@ -19,6 +19,7 @@ import rs.ogisa.notesapp.repositories.UserRepository;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -82,6 +83,11 @@ public class NoteService {
         }
 
         return noteList;
+    }
+
+    public Note getNoteById(Long noteId){
+
+        return noteRepository.findByNoteId(noteId).orElseThrow(() -> new NoteNotFoundException(noteId));
     }
 
     public Note sendContentToUserNote(EditNoteDto editNoteDto){
