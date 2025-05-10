@@ -58,9 +58,8 @@ public class NoteController {
     }
 
     @MessageMapping("/update-note")
-    @SendToUser("/queue/position-updates")
     public void changeNoteContent(EditNoteDto editNoteDto) {
         Note changedNote = noteService.sendContentToUserNote(editNoteDto);
-        messagingTemplate.convertAndSendToUser(editNoteDto.getUsername(),"/queue/position-updates/", changedNote);
+        messagingTemplate.convertAndSend("/topic/note/"+changedNote.getNoteId(), changedNote);
     }
 }

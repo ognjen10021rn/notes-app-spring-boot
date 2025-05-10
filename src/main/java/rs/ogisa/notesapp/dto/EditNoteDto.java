@@ -15,7 +15,6 @@ import java.util.List;
 public class EditNoteDto implements Serializable {
 
     private Long userId;
-    private String username;
     private Long noteId;
     private String title;
     private String content;
