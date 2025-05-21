@@ -37,6 +37,7 @@ public class NoteService {
         note.setCreatedAt(LocalDateTime.now());
         note.setUpdatedAt(LocalDateTime.now());
         note.setIsLocked(false);
+        note.setIsDeleted(false);
         note.setTitle(createNoteDto.getTitle());
 
         noteRepository.save(note);
@@ -64,6 +65,19 @@ public class NoteService {
 
         return true;
 
+    }
+
+    public ResponseEntity<?> deleteNoteById(Long noteId) {
+
+        if(!noteRepository.existsById(noteId)){
+            return ResponseEntity.notFound().build();
+        }
+        Note note = noteRepository.findById(noteId).orElseThrow(() -> new NoteNotFoundException(noteId));
+
+        note.setIsDeleted(true);
+        noteRepository.save(note);
+
+        return ResponseEntity.ok().build();
     }
 
     public List<UserNote> getAllUserNote(){

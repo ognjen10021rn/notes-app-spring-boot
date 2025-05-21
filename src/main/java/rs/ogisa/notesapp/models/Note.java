@@ -29,6 +29,8 @@ public class Note implements Serializable {
 
     private Boolean isLocked;
 
+    private Boolean isDeleted;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;

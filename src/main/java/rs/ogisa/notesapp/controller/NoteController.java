@@ -56,6 +56,10 @@ public class NoteController {
     public List<Note> getAllNotes(@PathVariable Long userId) {
         return noteService.getAllNotesByUserId(userId);
     }
+    @GetMapping("/deleteNoteById/{noteId}")
+    public ResponseEntity<?> deleteNoteById(@PathVariable Long noteId) {
+        return noteService.deleteNoteById(noteId);
+    }
 
     @MessageMapping("/update-note")
     public void changeNoteContent(EditNoteDto editNoteDto) {
