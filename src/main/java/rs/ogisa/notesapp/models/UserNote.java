@@ -28,4 +28,6 @@ public class UserNote implements Serializable {
 
     private Long noteId;
 
+    private Boolean isDeleted;
+
 }

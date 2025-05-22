@@ -63,4 +63,24 @@ public class UserController {
         return userService.getAllUsersWithoutId(id);
     }
 
+    @GetMapping("/getAllUsersFromNoteUsingNoteId/{noteId}/{userId}")
+    public List<User> getAllUsersFromNote(@PathVariable Long noteId, @PathVariable Long userId) {
+        return userService.getAllUsersFromNoteUsingNoteId(noteId, userId);
+    }
+
+    @GetMapping("/getAllUsersThatAreNotInNoteId/{noteId}")
+    public List<User> getAllUsersThatAreNotInNoteId(@PathVariable Long noteId) {
+        return userService.getAllUsersThatAreNotInNoteId(noteId);
+    }
+
+    @GetMapping("/removeUserFromNote/{noteId}/{userId}/{userToRemove}")
+    public ResponseEntity<?> removeUserFromNote(@PathVariable Long noteId, @PathVariable Long userId, @PathVariable Long userToRemove) {
+        return userService.removeUserFromNote(noteId, userId, userToRemove);
+    }
+
+    @GetMapping("/addUserToNote/{noteId}/{userId}/{userToAdd}")
+    public ResponseEntity<?> addUserToNote(@PathVariable Long noteId, @PathVariable Long userId, @PathVariable Long userToAdd) {
+        return userService.addUserToNote(noteId, userId, userToAdd);
+    }
+
 }

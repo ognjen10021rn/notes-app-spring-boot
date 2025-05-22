@@ -47,6 +47,7 @@ public class NoteService {
         userNote.setNoteId(note.getNoteId());
         userNote.setUserId(userId);
         userNote.setIsUserAdmin(true);
+        userNote.setIsDeleted(false);
         userNoteRepository.save(userNote);
 
         //TODO dodaj proveru da li je user vec dodao te korisnike u note
@@ -58,6 +59,7 @@ public class NoteService {
             usr.setNoteId(note.getNoteId());
             usr.setUserId(usrId);
             usr.setIsUserAdmin(false);
+            usr.setIsDeleted(false);
             userNoteList.add(usr);
         }
         userNoteRepository.saveAll(userNoteList);
@@ -91,8 +93,12 @@ public class NoteService {
         List<UserNote> userNoteList = userNoteRepository.findAllByUserId(userId);
         List<Note> noteList = new ArrayList<>();
         for(UserNote note : userNoteList){
+            if(note.getIsDeleted()){
+               continue;
+            }
             Note nt = noteRepository.findByNoteId(note.getNoteId()).orElseThrow(()
                     -> new NoteNotFoundException(note.getNoteId()));
+
             noteList.add(nt);
         }
 
