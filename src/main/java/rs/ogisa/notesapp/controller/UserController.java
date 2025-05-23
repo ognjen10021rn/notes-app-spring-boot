@@ -8,6 +8,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import rs.ogisa.notesapp.dto.CreateUserDto;
+import rs.ogisa.notesapp.dto.ManageUserDto;
 import rs.ogisa.notesapp.dto.UserDto;
 import rs.ogisa.notesapp.jwt.JwtUtil;
 import rs.ogisa.notesapp.models.LoginResponse;
@@ -73,14 +74,14 @@ public class UserController {
         return userService.getAllUsersThatAreNotInNoteId(noteId);
     }
 
-    @GetMapping("/removeUserFromNote/{noteId}/{userId}/{userToRemove}")
-    public ResponseEntity<?> removeUserFromNote(@PathVariable Long noteId, @PathVariable Long userId, @PathVariable Long userToRemove) {
-        return userService.removeUserFromNote(noteId, userId, userToRemove);
+    @PostMapping("/removeUserFromNote/{noteId}")
+    public ResponseEntity<?> removeUserFromNote(@PathVariable Long noteId, @RequestBody ManageUserDto manageUserDto) {
+        return userService.removeUserFromNote(noteId, manageUserDto);
     }
 
-    @GetMapping("/addUserToNote/{noteId}/{userId}/{userToAdd}")
-    public ResponseEntity<?> addUserToNote(@PathVariable Long noteId, @PathVariable Long userId, @PathVariable Long userToAdd) {
-        return userService.addUserToNote(noteId, userId, userToAdd);
+    @PostMapping("/addUserToNote/{noteId}")
+    public ResponseEntity<?> addUserToNote(@PathVariable Long noteId, @RequestBody ManageUserDto manageUserDto) {
+        return userService.addUserToNote(noteId, manageUserDto);
     }
 
 }

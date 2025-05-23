@@ -8,7 +8,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import rs.ogisa.notesapp.dto.CreateUserDto;
+import rs.ogisa.notesapp.dto.ManageUserDto;
 import rs.ogisa.notesapp.dto.UserDto;
+import rs.ogisa.notesapp.exceptions.UserNotFoundException;
 import rs.ogisa.notesapp.models.User;
 import rs.ogisa.notesapp.models.UserNote;
 import rs.ogisa.notesapp.repositories.NoteRepository;
@@ -101,8 +103,8 @@ public class UserService {
         return foundUsers;
     }
 
-    public ResponseEntity<?> removeUserFromNote(Long noteId, Long userId, Long idToRemove) {
-        UserNote userNote = userNoteRepository.findByUserIdAndNoteId(userId, noteId);
+    public ResponseEntity<?> removeUserFromNote(Long noteId, ManageUserDto manageUserDto) {
+        UserNote userNote = userNoteRepository.findByUserIdAndNoteId(manageUserDto.getUserId(), noteId);
         System.out.println("UserNote: " + userNote);
 
         if(userNote == null){
@@ -112,35 +114,53 @@ public class UserService {
         if(!userNote.getIsUserAdmin()){
            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        UserNote userNoteToDelete = userNoteRepository.findByUserIdAndNoteId(idToRemove, noteId);
-        if(userNoteToDelete == null){
-            return ResponseEntity.notFound().build();
+
+        for(Long id : manageUserDto.getUserIds()){
+            UserNote userNoteToDelete = userNoteRepository.findByUserIdAndNoteId(id, noteId);
+            if(userNoteToDelete == null){
+                return ResponseEntity.notFound().build();
+            }
+            if(userNoteToDelete.getIsDeleted()){
+                continue;
+            }
+
+            userNoteToDelete.setIsDeleted(true);
+            userNoteRepository.save(userNoteToDelete);
         }
-        userNoteToDelete.setIsDeleted(true);
-        userNoteRepository.save(userNoteToDelete);
+
         return ResponseEntity.ok().build();
     }
 
-    public ResponseEntity<?> addUserToNote(Long noteId, Long userId, Long idToAdd) {
-        UserNote userNote = userNoteRepository.findByUserIdAndNoteId(userId, noteId);
-        UserNote userNoteIsAdded = userNoteRepository.findByUserIdAndNoteId(idToAdd, noteId);
-        if(userNoteIsAdded != null){
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-        }
+    public ResponseEntity<?> addUserToNote(Long noteId, ManageUserDto manageUserDto) {
+
+        UserNote userNote = userNoteRepository.findByUserIdAndNoteId(manageUserDto.getUserId(), noteId);
+
         if(userNote == null){
             return ResponseEntity.notFound().build();
         }
-
         if(!userNote.getIsUserAdmin()){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        UserNote userNoteToAdd = new UserNote();
-        userNoteToAdd.setNoteId(noteId);
-        userNoteToAdd.setUserId(idToAdd);
-        userNoteToAdd.setIsUserAdmin(false);
-        userNoteToAdd.setIsDeleted(false);
-        userNoteRepository.save(userNoteToAdd);
+        for(Long id : manageUserDto.getUserIds()){
+            UserNote userNoteIsAdded = userNoteRepository.findByUserIdAndNoteId(id, noteId);
+
+            if(userNoteIsAdded != null){
+                if(userNoteIsAdded.getIsDeleted()){
+                    userNoteIsAdded.setIsDeleted(false);
+                    userNoteRepository.save(userNoteIsAdded);
+                    continue;
+                }
+                return ResponseEntity.status(HttpStatus.CONFLICT).build();
+            }
+
+            UserNote userNoteToAdd = new UserNote();
+            userNoteToAdd.setNoteId(noteId);
+            userNoteToAdd.setUserId(id);
+            userNoteToAdd.setIsUserAdmin(false);
+            userNoteToAdd.setIsDeleted(false);
+            userNoteRepository.save(userNoteToAdd);
+        }
         return ResponseEntity.ok().build();
     }
 }
