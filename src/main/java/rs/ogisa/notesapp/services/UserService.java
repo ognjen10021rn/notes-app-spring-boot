@@ -1,6 +1,7 @@
 package rs.ogisa.notesapp.services;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,6 +12,7 @@ import rs.ogisa.notesapp.dto.CreateUserDto;
 import rs.ogisa.notesapp.dto.ManageUserDto;
 import rs.ogisa.notesapp.dto.UserDto;
 import rs.ogisa.notesapp.exceptions.UserNotFoundException;
+import rs.ogisa.notesapp.models.Role;
 import rs.ogisa.notesapp.models.User;
 import rs.ogisa.notesapp.models.UserNote;
 import rs.ogisa.notesapp.repositories.NoteRepository;
@@ -19,6 +21,7 @@ import rs.ogisa.notesapp.repositories.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,16 +32,17 @@ public class UserService {
     private final UserNoteRepository userNoteRepository;
     private final PasswordEncoder passwordEncoder;
 
+
     public boolean createUser(CreateUserDto user) {
 
         User usr = new User();
-        System.out.println(user.getUsername() + " " + user.getPassword());
-        User usr1 = userRepository.findByUsername(user.getUsername());
+        User usr1 = userRepository.findByUsernameOrEmail(user.getUsername(), user.getEmail());
 
         if (usr1 != null) {
-            System.out.println("USAOOOOOOOOOOOOO");
             return false;
         }
+        usr.setEmail(user.getEmail());
+        usr.setRole(Role.ROLE_USER);
         usr.setPassword(passwordEncoder.encode(user.getPassword()));
         usr.setUsername(user.getUsername());
         userRepository.save(usr);
@@ -46,28 +50,27 @@ public class UserService {
 
     }
 
-    public UserDto getUserByUsername(String username) {
+    public UserDto getUserByUsernameOrEmail(String username) {
 
-        User user = userRepository.findByUsername(username);
+        User user = userRepository.findByUsernameOrEmail(username, username);
         if (user == null) {
             return null;
         }
         UserDto userDto = new UserDto();
         userDto.setUserId(user.getUserId());
         userDto.setUsername(user.getUsername());
+        userDto.setEmail(user.getEmail());
         userDto.setPassword(user.getPassword());
         return userDto;
     }
 
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username);
+    public Optional<User> loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        if (user == null) {
-            throw new UsernameNotFoundException("User with the username: " + username + " not found");
-        }
+        return userRepository.findByUsername(username);
+    }
+    public Optional<User> loadUserByEmail(String email) throws UsernameNotFoundException {
 
-        return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), new ArrayList<>());
-
+        return userRepository.findByEmail(email);
     }
 
     public List<User> getAllUsers() {

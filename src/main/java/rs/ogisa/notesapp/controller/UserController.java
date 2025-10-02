@@ -3,11 +3,14 @@ package rs.ogisa.notesapp.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import rs.ogisa.notesapp.dto.CreateUserDto;
+import rs.ogisa.notesapp.dto.LoginRequestDto;
 import rs.ogisa.notesapp.dto.ManageUserDto;
 import rs.ogisa.notesapp.dto.UserDto;
 import rs.ogisa.notesapp.jwt.JwtUtil;
@@ -16,6 +19,7 @@ import rs.ogisa.notesapp.models.User;
 import rs.ogisa.notesapp.repositories.UserRepository;
 import rs.ogisa.notesapp.services.UserService;
 
+import java.net.http.HttpClient;
 import java.util.List;
 
 @RestController
@@ -31,18 +35,37 @@ public class UserController {
 
     @PostMapping("/auth/login")
     @Operation(description = "za Login korisnika")
-    public ResponseEntity<?> login(@RequestBody CreateUserDto loginRequest) {
+    public ResponseEntity<?> login(@RequestBody LoginRequestDto loginRequest) {
         try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsernameOrEmail(),
                     loginRequest.getPassword()));
         } catch (Exception e) {
-            if(userService.createUser(loginRequest)){
-                return ResponseEntity.ok(new LoginResponse(jwtUtil.generateToken(userService.getUserByUsername(loginRequest.getUsername()))));
-            }
             return ResponseEntity.status(401).build();
         }
-        return ResponseEntity.ok(new LoginResponse(jwtUtil.generateToken(userService.getUserByUsername(loginRequest.getUsername()))));
+        return ResponseEntity.ok(new LoginResponse(jwtUtil.generateToken(
+                userService.getUserByUsernameOrEmail(loginRequest.getUsernameOrEmail())
+        )));
     }
+
+    @PostMapping("/auth/register")
+    @Operation(description = "register korisnika")
+    public ResponseEntity<?> register(@RequestBody CreateUserDto registerRequest) {
+        userService.createUser(registerRequest);
+        return ResponseEntity.ok(new LoginResponse(jwtUtil.generateToken(userService.getUserByUsernameOrEmail(registerRequest.getUsername()))));
+    }
+
+    // TODO GITHUB REGISTER
+    @GetMapping("/auth/githubRegister")
+    @Operation(description = "register korisnika")
+    public ResponseEntity<?> githubRegister() {
+        // login/oauth2/code/github
+        //http://localhost:8080/oauth2/authorization/github
+        System.out.println("USAOOOOO");
+
+
+        return null;
+    }
+
 
 
     @PostMapping("/createUser")
